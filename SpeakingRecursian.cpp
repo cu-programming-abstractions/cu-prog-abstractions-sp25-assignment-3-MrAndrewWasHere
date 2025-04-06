@@ -1,12 +1,40 @@
 #include "SpeakingRecursian.h"
+#include "error.h"
 using namespace std;
 
+const Vector<char> vowels = {'e', 'i', 'u'};
+const Vector<char> consonants = {'b', 'k', 'n', 'r', 's', '\''};
+
+// Helper function
+void recursianWordsHelper(int syllablesLeft, bool isFirstSyllable, string current, Vector<string>& result) {
+    if (syllablesLeft == 0) {
+        result.add(current);
+        return;
+    }
+
+    if (isFirstSyllable) {
+        // Option 1: Start with just a vowel
+        for (char v : vowels) {
+            recursianWordsHelper(syllablesLeft - 1, false, current + v, result);
+        }
+    }
+
+    // Option 2: Use consonant + vowel
+    for (char c : consonants) {
+        for (char v : vowels) {
+            recursianWordsHelper(syllablesLeft - 1, false, current + c + v, result);
+        }
+    }
+}
+
 Vector<string> allRecursianWords(int numSyllables) {
-    /* TODO: Delete this comment and the next few lines, then implement
-     * this function.
-     */
-    (void) numSyllables;
-    return { };
+    if (numSyllables < 0) {
+        error("Number of syllables must be non-negative.");
+    }
+
+    Vector<string> result;
+    recursianWordsHelper(numSyllables, true, "", result);
+    return result;
 }
 
 

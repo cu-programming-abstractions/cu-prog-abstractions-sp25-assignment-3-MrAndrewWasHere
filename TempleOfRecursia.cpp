@@ -1,12 +1,96 @@
 #include "TempleOfRecursia.h"
+#include "error.h"
 using namespace std;
 
 Vector<Rectangle> makeTemple(const Rectangle& bounds, const TempleParameters& params) {
-    /* TODO: Delete this comment and the next few lines, then implement this function. */
-    (void) bounds;
-    (void) params;
-    return { };
+    if (params.order < 0) {
+        error("Temple order cannot be negative.");
+    }
+    if (params.order == 0) {
+        return {}; // No temple to draw
+    }
+
+    Vector<Rectangle> result;
+
+    // --- Base ---
+    int baseWidth = bounds.width * params.baseWidth;
+    int baseHeight = bounds.height * params.baseHeight;
+
+    int baseX = bounds.x + (bounds.width - baseWidth) / 2;
+    int baseY = bounds.y + bounds.height - baseHeight;
+
+    Rectangle base;
+    base.x = baseX;
+    base.y = baseY;
+    base.width = baseWidth;
+    base.height = baseHeight;
+
+    result.add(base);
+
+    // --- Column ---
+    int columnWidth = bounds.width * params.columnWidth;
+    int columnHeight = bounds.height * params.columnHeight;
+
+    int columnX = bounds.x + (bounds.width - columnWidth) / 2;
+    int columnY = baseY - columnHeight;
+
+    Rectangle column;
+    column.x = columnX;
+    column.y = columnY;
+    column.width = columnWidth;
+    column.height = columnHeight;
+
+    result.add(column);
+
+    // --- Upper Temple ---
+    int upperTempleHeight = bounds.height * params.upperTempleHeight;
+
+    Rectangle upperBounds;
+    upperBounds.x = columnX;
+    upperBounds.y = columnY - upperTempleHeight;
+    upperBounds.width = columnWidth;
+    upperBounds.height = upperTempleHeight;
+
+    // Copy params and reduce order
+    TempleParameters newParams = params;
+    newParams.order -= 1;
+
+    Vector<Rectangle> upperTemple = makeTemple(upperBounds, newParams);
+    for (const Rectangle& r : upperTemple) {
+        result.add(r);
+    }
+
+    // --- Smaller Temples ---
+    int numSmall = params.numSmallTemples;
+    if (numSmall >= 2) {
+        int smallWidth = bounds.width * params.smallTempleWidth;
+        int smallHeight = bounds.height * params.smallTempleHeight;
+
+        int spacing = (base.width - numSmall * smallWidth) / (numSmall - 1);
+
+        for (int i = 0; i < numSmall; ++i) {
+            int x = baseX + i * (smallWidth + spacing);
+            int y = baseY - smallHeight;
+
+            Rectangle smallBounds;
+            smallBounds.x = x;
+            smallBounds.y = y;
+            smallBounds.width = smallWidth;
+            smallBounds.height = smallHeight;
+
+            TempleParameters smallParams = params;
+            smallParams.order -= 1;
+
+            Vector<Rectangle> smallTemple = makeTemple(smallBounds, smallParams);
+            for (const Rectangle& r : smallTemple) {
+                result.add(r);
+            }
+        }
+    }
+
+    return result;
 }
+
 
 
 

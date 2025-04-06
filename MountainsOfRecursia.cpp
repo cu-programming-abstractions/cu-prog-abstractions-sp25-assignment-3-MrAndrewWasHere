@@ -1,19 +1,47 @@
 #include "MountainsOfRecursia.h"
+#include "random.h"
+#include "error.h"
+
 using namespace std;
 
 Vector<Point> makeMountainRange(const Point& left,
                                 const Point& right,
                                 int amplitude,
                                 double decayRate) {
-    /* TODO: Delete this comment and the next few lines, then implement this
-     * function.
-     */
-    (void) left;
-    (void) right;
-    (void) amplitude;
-    (void) decayRate;
-    return { };
+    // === Validate inputs ===
+    if (left.x > right.x) {
+        error("Left point must not be to the right of the right point.");
+    }
+    if (amplitude < 0) {
+        error("Amplitude must be non-negative.");
+    }
+    if (decayRate < 0 || decayRate > 1) {
+        error("Decay rate must be between 0 and 1 inclusive.");
+    }
+
+    // === Base case ===
+    if (right.x - left.x <= 3) {
+        return {left, right};
+    }
+
+    // === Find midpoint ===
+    Point midpoint;
+    midpoint.x = (left.x + right.x) / 2;
+    midpoint.y = (left.y + right.y) / 2;
+
+    // === Apply vertical random displacement ===
+    int offset = randomInteger(-amplitude, amplitude);
+    midpoint.y += offset;
+
+    // === Recurse on left and right segments with decayed amplitude ===
+    Vector<Point> leftRange = makeMountainRange(left, midpoint, int(amplitude * decayRate), decayRate);
+    Vector<Point> rightRange = makeMountainRange(midpoint, right, int(amplitude * decayRate), decayRate);
+
+    // === Merge both sides, excluding the duplicate midpoint ===
+    leftRange.remove(leftRange.size() - 1); // Correct method to remove last element
+    return leftRange + rightRange;
 }
+
 
 /* * * * * Test Cases Below This Point * * * * */
 #include "GUI/SimpleTest.h"
